@@ -1,18 +1,45 @@
 <template>
   <div id="app">
-    <h1>{{videos[currentVideoIndex].title}}</h1>
     <youtube :player-vars="playerVars" ref="youtube"></youtube>
-    <button @click="startSession">Play</button>
-    <p>Timer inicia em {{getInPositionCountdown}} segundos</p>
-    <p>Exercício termina em {{exerciseCountdown}} segundos</p>
+    <h1>{{videos[currentVideoIndex].title}}</h1>
+    
+    <button @click="prevExercise">Anterior</button>
+    <button @click="resumeSession">Play</button>
+    <button @click="stopSession">Stop</button>
+    <button @click="nextExercise">Próximo</button>
+
     <vc-donut
+      v-if="timers.countdown.isRunning"
       ref="countdown"
       :total="videos[currentVideoIndex].timer.seconds"
       :sections="[{value: exerciseCountdown}]"
       :text="exerciseCountdown.toString()"
     />
+    <vc-donut
+      v-if="timers.getInPosition.isRunning"
+      ref="getInPosition"
+      :total="TIME_TO_POSITION"
+      :sections="[{value: getInPositionCountdown}]"
+      text="Prepare-se"
+    />
+    <vc-donut
+      v-if="timers.changeSide.isRunning"
+      ref="changeSide"
+      :total="CHANGE_SIDE_INTERVAL"
+      :sections="[{value: changeSideCountdown}]"
+      text="Mudança de lado"
+    />
+    <vc-donut
+      v-if="timers.repCount.isRunning"
+      ref="repCount"
+      :total="videos[currentVideoIndex].timer.repetitionCount"
+      :sections="[{value: exerciseRepCount}]"
+      :text="`<strong>${exerciseRepCount.toString()}</strong>/${videos[currentVideoIndex].timer.repetitionCount}`"
+    >
+      <span style="font-size:xxx-large">{{exerciseRepCount.toString()}}</span>
+      /{{videos[currentVideoIndex].timer.repetitionCount}}
+    </vc-donut>
 
-    <p>Você fez {{exerciseRepCount}} de {{videos[currentVideoIndex].timer.repetitionCount}}</p>
     <!-- <timer-component @timer-stop:getInPosition="startExercise" @timer-stop:exercise="nextExercise"/> -->
     <p>Timer preparo: {{timers.getInPosition.isRunning}}</p>
     <p>Timer exercício: {{timers.countdown.isRunning}}</p>
@@ -21,17 +48,23 @@
 </template>
 
 <script>
-/* import { timer } from "vue-timers"; */
+import  bBeep  from "browser-beep"
+const beep = bBeep({ frequency: 500 })
 export default {
   name: "App",
   /* components: { 'timer-component': timer }, */
   data() {
     return {
+      doneSide1: false,
+      voices: [],
+      TIME_TO_POSITION: 5,
+      CHANGE_SIDE_INTERVAL: 4,
       synth: null,
       loopDuration: 10000,
       videoStart: 0,
       currentVideoIndex: 0,
       getInPositionCountdown: 0,
+      changeSideCountdown: 4,
       exerciseCountdown: 0,
       exerciseRepCount: 0,
       videos: [
@@ -44,7 +77,7 @@ export default {
           timer: {
             type: "repCount",
             repetitionCount: 5,
-            repetitionTime: 3000,
+            repetitionTime: 6000,
             bothSides: true
           },
           rest: 0
@@ -55,7 +88,7 @@ export default {
           videoId: "3nhQfUGjRCA",
           start: 32,
           end: 42,
-          timer: { type: "countdown", seconds: 30, bothSides: true },
+          timer: { type: "countdown", seconds: 10, bothSides: true },
           rest: 0
         }
       ],
@@ -73,7 +106,8 @@ export default {
     seek: { time: 1000, autostart: false, repeat: true },
     getInPosition: { time: 1000, autostart: false, repeat: true },
     countdown: { time: 1000, autostart: false, repeat: true },
-    repCount: { time: 1000, autostart: false, repeat: true }
+    repCount: { time: 1000, autostart: false, repeat: true },
+    changeSide: { time: 1000, autostart: false, repeat: true }
   },
   methods: {
     // **** TIMERS ******
@@ -83,6 +117,7 @@ export default {
     getInPosition() {
       if (this.getInPositionCountdown > 0) {
         this.getInPositionCountdown--;
+        beep(1)
       } else {
         this.$timer.stop("getInPosition");
         this.startExercise();
@@ -92,21 +127,52 @@ export default {
       if (this.exerciseCountdown > 0) {
         this.exerciseCountdown--;
       } else {
+        // chegou no fim do tempo, zera o timer. Tem que fazer outro lado?
         this.$timer.stop("countdown");
-        this.nextExercise();
+        if (
+          this.videos[this.currentVideoIndex].timer.bothSides &&
+          !this.doneSide1
+        ) {
+          //chama o timer de virada
+          this.doneSide1 = true;
+          this.speak("Mudança de lado...");
+          this.$timer.start("changeSide");
+        } else {
+          this.nextExercise();
+        }
       }
     },
     repCount() {
+      this.exerciseRepCount++;
       if (
         this.exerciseRepCount <
         this.videos[this.currentVideoIndex].timer.repetitionCount
       ) {
-        this.exerciseRepCount++
-        this.speak(this.exerciseRepCount)
+        this.speak(this.exerciseRepCount);
       } else {
+        this.speak(this.exerciseRepCount);
         this.$timer.stop("repCount");
         this.exerciseRepCount = 0;
-        this.nextExercise();
+        if (
+          this.videos[this.currentVideoIndex].timer.bothSides &&
+          !this.doneSide1
+        ) {
+          //chama o timer de virada
+          this.doneSide1 = true;
+          this.speak("Mudança de lado...");
+          this.$timer.start("changeSide");
+        } else {
+          this.nextExercise();
+        }
+      }
+    },
+    changeSide() {
+      if (this.changeSideCountdown > 0) {
+        this.changeSideCountdown--;
+      } else {
+        this.$timer.stop("changeSide");
+        this.changeSideCountdown = this.CHANGE_SIDE_INTERVAL;
+        this.startExercise();
       }
     },
     // ***** FIM TIMERS *****
@@ -128,21 +194,33 @@ export default {
         default:
           break;
       }
-      /* if (this.videos[this.currentVideoIndex].repetitionType */
     },
     nextExercise() {
-      if (this.currentVideoIndex >= this.videos.length) return;
-      this.$timer.stop("seek");
-      this.player.stopVideo();
+      this.stopSession();
       this.currentVideoIndex++;
+      this.currentVideoIndex < this.videos.length
+        ? this.resumeSession()
+        : (this.currentVideoIndex = 0);
+    },
+    prevExercise() {
+      this.stopSession();
+      this.currentVideoIndex--;
+      this.currentVideoIndex >= 0
+        ? this.resumeSession()
+        : (this.currentVideoIndex = 0);
+    },
+    resumeSession() {
+      this.speak(this.videos[this.currentVideoIndex].title);
       this.play(this.videos[this.currentVideoIndex]);
-      this.getInPositionCountdown = 10;
+      this.getInPositionCountdown = this.TIME_TO_POSITION;
       this.$timer.start("getInPosition");
     },
-    startSession() {
-      this.play(this.videos[this.currentVideoIndex]);
-      this.getInPositionCountdown = 10;
-      this.$timer.start("getInPosition");
+    stopSession() {
+      this.$timer.stop("seek");
+      this.$timer.stop("changeSide");
+      this.$timer.stop(this.videos[this.currentVideoIndex].timer.type);
+      this.player.stopVideo();
+      this.doneSide1 = false;
     },
     play(params) {
       let { videoId, start, end } = params;
@@ -163,35 +241,30 @@ export default {
     },
     speak(text) {
       if (this.synth.speaking) {
-        console.error('speechSynthesis.speaking');
+        console.error("speechSynthesis.speaking");
         return;
       }
-      if (!text) return
+      if (!text) return;
 
       var utterThis = new SpeechSynthesisUtterance(text);
-      utterThis.onend = function (event) {
-        console.log('SpeechSynthesisUtterance.onend');
-      }
-      utterThis.onerror = function (event) {
-        console.error('SpeechSynthesisUtterance.onerror');
-      }
+      utterThis.voice = this.voices[0];
+      utterThis.onerror = function(event) {
+        console.error("SpeechSynthesisUtterance.onerror");
+      };
       this.synth.speak(utterThis);
     }
-    
   },
   mounted() {
-    this.synth = window.speechSynthesis || null
+    if (window.speechSynthesis) {
+      this.synth = window.speechSynthesis;
+      this.voices = this.synth.getVoices();
+    }
   }
 };
 </script>
 
 <style>
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
 }
 </style>
