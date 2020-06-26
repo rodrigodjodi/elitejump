@@ -1,55 +1,64 @@
 <template>
-  <div id="app">
-    <youtube :player-vars="playerVars" ref="youtube"></youtube>
-    <h1>{{videos[currentVideoIndex].title}}</h1>
-    
-    <button @click="prevExercise">Anterior</button>
-    <button @click="resumeSession">Play</button>
-    <button @click="stopSession">Stop</button>
-    <button @click="nextExercise">Próximo</button>
+  <v-app>
+    <v-main>
+      <v-container>
+        <youtube :player-vars="playerVars" ref="youtube"></youtube>
+        <h1>{{videos[currentVideoIndex].title}}</h1>
 
-    <vc-donut
-      v-if="timers.countdown.isRunning"
-      ref="countdown"
-      :total="videos[currentVideoIndex].timer.seconds"
-      :sections="[{value: exerciseCountdown}]"
-      :text="exerciseCountdown.toString()"
-    />
-    <vc-donut
-      v-if="timers.getInPosition.isRunning"
-      ref="getInPosition"
-      :total="TIME_TO_POSITION"
-      :sections="[{value: getInPositionCountdown}]"
-      text="Prepare-se"
-    />
-    <vc-donut
-      v-if="timers.changeSide.isRunning"
-      ref="changeSide"
-      :total="CHANGE_SIDE_INTERVAL"
-      :sections="[{value: changeSideCountdown}]"
-      text="Mudança de lado"
-    />
-    <vc-donut
-      v-if="timers.repCount.isRunning"
-      ref="repCount"
-      :total="videos[currentVideoIndex].timer.repetitionCount"
-      :sections="[{value: exerciseRepCount}]"
-      :text="`<strong>${exerciseRepCount.toString()}</strong>/${videos[currentVideoIndex].timer.repetitionCount}`"
-    >
-      <span style="font-size:xxx-large">{{exerciseRepCount.toString()}}</span>
-      /{{videos[currentVideoIndex].timer.repetitionCount}}
-    </vc-donut>
+        <v-btn @click="prevExercise">Anterior</v-btn>
+        <v-btn @click="resumeSession">Play</v-btn>
+        <v-btn @click="stopSession">Stop</v-btn>
+        <v-btn @click="nextExercise">Próximo</v-btn>
 
-    <!-- <timer-component @timer-stop:getInPosition="startExercise" @timer-stop:exercise="nextExercise"/> -->
-    <p>Timer preparo: {{timers.getInPosition.isRunning}}</p>
-    <p>Timer exercício: {{timers.countdown.isRunning}}</p>
-    <p>contagem exercício: {{timers.repCount.isRunning}}</p>
-  </div>
+        <!-- <vc-donut ref="controls" :total="1" :sections="[{value: 0}]">
+          <v-btn class="mx-2" fab dark color="red">
+            <v-icon dark>mdi-play</v-icon>
+          </v-btn>
+        </vc-donut> -->
+        <vc-donut
+          v-if="timers.countdown.isRunning"
+          ref="countdown"
+          :total="videos[currentVideoIndex].timer.seconds"
+          :sections="[{value: exerciseCountdown}]"
+          :text="exerciseCountdown.toString()"
+        />
+        <vc-donut
+          v-if="timers.getInPosition.isRunning"
+          ref="getInPosition"
+          :total="TIME_TO_POSITION"
+          :sections="[{value: getInPositionCountdown}]"
+          text="Prepare-se"
+        />
+        <vc-donut
+          v-if="timers.changeSide.isRunning"
+          ref="changeSide"
+          :total="CHANGE_SIDE_INTERVAL"
+          :sections="[{value: changeSideCountdown}]"
+          text="Mudança de lado"
+        />
+        <vc-donut
+          v-if="timers.repCount.isRunning"
+          ref="repCount"
+          :total="videos[currentVideoIndex].timer.repetitionCount"
+          :sections="[{value: exerciseRepCount}]"
+          :text="`<strong>${exerciseRepCount.toString()}</strong>/${videos[currentVideoIndex].timer.repetitionCount}`"
+        >
+          <span style="font-size:xxx-large">{{exerciseRepCount.toString()}}</span>
+          /{{videos[currentVideoIndex].timer.repetitionCount}}
+        </vc-donut>
+
+        <!-- <timer-component @timer-stop:getInPosition="startExercise" @timer-stop:exercise="nextExercise"/> -->
+        <p>Timer preparo: {{timers.getInPosition.isRunning}}</p>
+        <p>Timer exercício: {{timers.countdown.isRunning}}</p>
+        <p>contagem exercício: {{timers.repCount.isRunning}}</p>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script>
-import  bBeep  from "browser-beep"
-const beep = bBeep({ frequency: 500 })
+import bBeep from "browser-beep";
+const beep = bBeep({ frequency: 500 });
 export default {
   name: "App",
   /* components: { 'timer-component': timer }, */
@@ -117,7 +126,7 @@ export default {
     getInPosition() {
       if (this.getInPositionCountdown > 0) {
         this.getInPositionCountdown--;
-        beep(1)
+        beep(1);
       } else {
         this.$timer.stop("getInPosition");
         this.startExercise();
@@ -264,7 +273,4 @@ export default {
 </script>
 
 <style>
-#app {
-
-}
 </style>
