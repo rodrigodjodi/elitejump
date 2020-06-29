@@ -1,72 +1,168 @@
 <template>
   <v-app>
     <v-main>
-      <v-container>
-        <youtube :player-vars="playerVars" ref="youtube"></youtube>
-        <h1>{{videos[currentVideoIndex].title}}</h1>
+      <v-container fluid>
+        <v-row>
+          <v-col cols="12" md="8">
+            <youtube :player-vars="playerVars" width="100%" ref="youtube"></youtube>
+            <br>
+            <h1>{{videos[currentVideoIndex].title}}</h1>
+            <p>{{videos[currentVideoIndex].repText}}</p>
+          </v-col>
+          <!-- <v-btn @click="prevExercise">Anterior</v-btn>
+            <v-btn @click="resumeSession">Play</v-btn>
+            <v-btn @click="stopSession">Stop</v-btn>
+          <v-btn @click="nextExercise">Próximo</v-btn>-->
+          <v-col cols="12" md="4">
+            <vc-donut class="ma-4" v-if="isIdle" ref="idle" :total="1" :sections="[{value: 0}]">
+              <v-btn small icon @click="prevExercise">
+                <v-icon>mdi-rewind</v-icon>
+              </v-btn>
+              <v-btn x-large icon @click="resumeSession" color="primary" class="mx-8">
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+              <v-btn small icon @click="nextExercise">
+                <v-icon>mdi-fast-forward</v-icon>
+              </v-btn>
+            </vc-donut>
 
-        <v-btn @click="prevExercise">Anterior</v-btn>
-        <v-btn @click="resumeSession">Play</v-btn>
-        <v-btn @click="stopSession">Stop</v-btn>
-        <v-btn @click="nextExercise">Próximo</v-btn>
+            <vc-donut
+              v-if="timers.countdown.isRunning"
+              ref="countdown"
+              :total="videos[currentVideoIndex].timer.seconds"
+              :sections="[{value: exerciseCountdown}]"
+            >
+              {{exerciseCountdown.toString()}}
+              <br>
+              <v-btn small icon @click="prevExercise">
+                <v-icon>mdi-rewind</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="!timers.countdown.isRunning"
+                x-large
+                icon
+                @click="resumeSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="timers.countdown.isRunning"
+                x-large
+                icon
+                @click="stopSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-stop</v-icon>
+              </v-btn>
+              <v-btn small icon @click="nextExercise">
+                <v-icon>mdi-fast-forward</v-icon>
+              </v-btn>
+            </vc-donut>
 
-        <!-- <vc-donut ref="controls" :total="1" :sections="[{value: 0}]">
-          <v-btn class="mx-2" fab dark color="red">
-            <v-icon dark>mdi-play</v-icon>
-          </v-btn>
-        </vc-donut> -->
-        <vc-donut
-          v-if="timers.countdown.isRunning"
-          ref="countdown"
-          :total="videos[currentVideoIndex].timer.seconds"
-          :sections="[{value: exerciseCountdown}]"
-          :text="exerciseCountdown.toString()"
-        />
-        <vc-donut
-          v-if="timers.getInPosition.isRunning"
-          ref="getInPosition"
-          :total="TIME_TO_POSITION"
-          :sections="[{value: getInPositionCountdown}]"
-          text="Prepare-se"
-        />
-        <vc-donut
-          v-if="timers.changeSide.isRunning"
-          ref="changeSide"
-          :total="CHANGE_SIDE_INTERVAL"
-          :sections="[{value: changeSideCountdown}]"
-          text="Mudança de lado"
-        />
-        <vc-donut
-          v-if="timers.repCount.isRunning"
-          ref="repCount"
-          :total="videos[currentVideoIndex].timer.repetitionCount"
-          :sections="[{value: exerciseRepCount}]"
-          :text="`<strong>${exerciseRepCount.toString()}</strong>/${videos[currentVideoIndex].timer.repetitionCount}`"
-        >
-          <span style="font-size:xxx-large">{{exerciseRepCount.toString()}}</span>
-          /{{videos[currentVideoIndex].timer.repetitionCount}}
-        </vc-donut>
+            <vc-donut
+              v-if="timers.getInPosition.isRunning"
+              ref="getInPosition"
+              :total="videos[currentVideoIndex].timer.prep || DEFAULT_PREP_TIME"
+              :sections="[{value: getInPositionCountdown}]"
+              text
+            >Prepare-se
+              <br>
+              <v-btn small icon @click="prevExercise">
+                <v-icon>mdi-rewind</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="!timers.getInPosition.isRunning"
+                x-large
+                icon
+                @click="resumeSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="timers.getInPosition.isRunning"
+                x-large
+                icon
+                @click="stopSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-stop</v-icon>
+              </v-btn>
+              <v-btn small icon @click="nextExercise">
+                <v-icon>mdi-fast-forward</v-icon>
+              </v-btn>
+            </vc-donut>
 
-        <!-- <timer-component @timer-stop:getInPosition="startExercise" @timer-stop:exercise="nextExercise"/> -->
-        <p>Timer preparo: {{timers.getInPosition.isRunning}}</p>
-        <p>Timer exercício: {{timers.countdown.isRunning}}</p>
-        <p>contagem exercício: {{timers.repCount.isRunning}}</p>
+            <vc-donut
+              v-if="timers.changeSide.isRunning"
+              ref="changeSide"
+              :total="CHANGE_SIDE_INTERVAL"
+              :sections="[{value: changeSideCountdown}]"
+              text="Mudança de lado"
+            />
+            <vc-donut
+              v-if="timers.repCount.isRunning"
+              ref="repCount"
+              :total="videos[currentVideoIndex].timer.repetitionCount"
+              :sections="[{value: exerciseRepCount}]"
+            >
+              <span style="font-size:xxx-large">{{exerciseRepCount.toString()}}</span>
+              /{{videos[currentVideoIndex].timer.repetitionCount}}
+              <br>
+              <v-btn small icon @click="prevExercise">
+                <v-icon>mdi-rewind</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="!timers.repCount.isRunning"
+                x-large
+                icon
+                @click="resumeSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="timers.repCount.isRunning"
+                x-large
+                icon
+                @click="stopSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-stop</v-icon>
+              </v-btn>
+              <v-btn small icon @click="nextExercise">
+                <v-icon>mdi-fast-forward</v-icon>
+              </v-btn>
+            </vc-donut>
+          </v-col>
+        </v-row>
       </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script>
+import { fase1_sqs } from "@/assets/fase1-sqs";
+import { fase1_tq } from "@/assets/fase1-tq";
 import bBeep from "browser-beep";
-const beep = bBeep({ frequency: 500 });
+const beep = bBeep({ frequency: 800 });
+const beep2 = bBeep({ frequency: 5000 });
 export default {
   name: "App",
   /* components: { 'timer-component': timer }, */
+
   data() {
     return {
       doneSide1: false,
       voices: [],
-      TIME_TO_POSITION: 5,
+      DEFAULT_PREP_TIME: 5,
       CHANGE_SIDE_INTERVAL: 4,
       synth: null,
       loopDuration: 10000,
@@ -76,39 +172,23 @@ export default {
       changeSideCountdown: 4,
       exerciseCountdown: 0,
       exerciseRepCount: 0,
-      videos: [
-        {
-          title: "Foca",
-          repText: "5x cada lado",
-          videoId: "3nhQfUGjRCA",
-          start: 3,
-          end: 15,
-          timer: {
-            type: "repCount",
-            repetitionCount: 5,
-            repetitionTime: 6000,
-            bothSides: true
-          },
-          rest: 0
-        },
-        {
-          title: "Pretzel",
-          repText: "30s cada lado",
-          videoId: "3nhQfUGjRCA",
-          start: 32,
-          end: 42,
-          timer: { type: "countdown", seconds: 10, bothSides: true },
-          rest: 0
-        }
-      ],
+      videos: fase1_sqs,
       playerVars: {
-        controls: 1
+        controls: 0
       }
     };
   },
   computed: {
     player() {
       return this.$refs.youtube.player;
+    },
+    isIdle() {
+      return !(
+        this.timers.countdown.isRunning ||
+        this.timers.getInPosition.isRunning ||
+        this.timers.changeSide.isRunning ||
+        this.timers.repCount.isRunning
+      );
     }
   },
   timers: {
@@ -186,6 +266,7 @@ export default {
     },
     // ***** FIM TIMERS *****
     startExercise() {
+      beep2(2);
       switch (this.videos[this.currentVideoIndex].timer.type) {
         case "countdown":
           this.exerciseCountdown = this.videos[
@@ -221,10 +302,13 @@ export default {
     resumeSession() {
       this.speak(this.videos[this.currentVideoIndex].title);
       this.play(this.videos[this.currentVideoIndex]);
-      this.getInPositionCountdown = this.TIME_TO_POSITION;
+      this.getInPositionCountdown =
+        this.videos[this.currentVideoIndex].timer.prep ||
+        this.DEFAULT_PREP_TIME;
       this.$timer.start("getInPosition");
     },
     stopSession() {
+      this.$timer.stop("getInPosition");
       this.$timer.stop("seek");
       this.$timer.stop("changeSide");
       this.$timer.stop(this.videos[this.currentVideoIndex].timer.type);
