@@ -3,7 +3,7 @@
     <v-main>
       <v-container fluid>
         <v-row>
-          <v-col cols="12" md="8">
+          <v-col cols="8">
             <youtube :player-vars="playerVars" width="100%" ref="youtube"></youtube>
             <br>
             <h1>{{videos[currentVideoIndex].title}}</h1>
@@ -13,7 +13,7 @@
             <v-btn @click="resumeSession">Play</v-btn>
             <v-btn @click="stopSession">Stop</v-btn>
           <v-btn @click="nextExercise">Próximo</v-btn>-->
-          <v-col cols="12" md="4">
+          <v-col cols="4">
             <vc-donut class="ma-4" v-if="isIdle" ref="idle" :total="1" :sections="[{value: 0}]">
               <v-btn small icon @click="prevExercise">
                 <v-icon>mdi-rewind</v-icon>
@@ -150,7 +150,7 @@
 
 <script>
 import { fase1_sqs } from "@/assets/fase1-sqs";
-import { fase1_tq } from "@/assets/fase1-tq";
+//import { fase1_tq } from "@/assets/fase1-tq";
 import bBeep from "browser-beep";
 const beep = bBeep({ frequency: 800 });
 const beep2 = bBeep({ frequency: 5000 });
@@ -342,7 +342,7 @@ export default {
       var utterThis = new SpeechSynthesisUtterance(text);
       utterThis.voice = this.voices[0];
       utterThis.onerror = function(event) {
-        console.error("SpeechSynthesisUtterance.onerror");
+        console.error("SpeechSynthesisUtterance.onerror " + event);
       };
       this.synth.speak(utterThis);
     }
