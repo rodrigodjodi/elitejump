@@ -315,7 +315,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 10000,
+      repetitionTime: 8000,
       bothSides: false
     },
     rest: 60
@@ -330,7 +330,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 10000,
+      repetitionTime: 8000,
       bothSides: false
     },
     rest: 60

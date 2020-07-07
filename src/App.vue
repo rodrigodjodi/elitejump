@@ -3,8 +3,11 @@
     <v-main>
       <v-container fluid>
         <v-row>
-          <v-col cols="8">
-            <youtube :player-vars="playerVars" width="100%" ref="youtube"></youtube>
+          <v-col :xs="12" :sm="8">
+            <v-responsive :aspect-ratio="16/9">
+             <youtube :player-vars="playerVars" :fitParent="true"
+             resize="true" ref="youtube"></youtube>
+            </v-responsive>
             <br>
             <h1>{{videos[currentVideoIndex].title}}</h1>
             <p>{{videos[currentVideoIndex].repText}}</p>
@@ -13,7 +16,7 @@
             <v-btn @click="resumeSession">Play</v-btn>
             <v-btn @click="stopSession">Stop</v-btn>
           <v-btn @click="nextExercise">Próximo</v-btn>-->
-          <v-col cols="4">
+          <v-col :xs="12" :sm="4">
             <vc-donut class="ma-4" v-if="isIdle" ref="idle" :total="1" :sections="[{value: 0}]">
               <v-btn small icon @click="prevExercise">
                 <v-icon>mdi-rewind</v-icon>
@@ -49,6 +52,42 @@
               </v-btn>
               <v-btn
                 v-show="timers.countdown.isRunning"
+                x-large
+                icon
+                @click="stopSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-stop</v-icon>
+              </v-btn>
+              <v-btn small icon @click="nextExercise">
+                <v-icon>mdi-fast-forward</v-icon>
+              </v-btn>
+            </vc-donut>
+
+            <vc-donut
+              v-if="timers.rest.isRunning"
+              ref="rest"
+              :total="videos[currentVideoIndex].rest"
+              :sections="[{value: restCountdown}]"
+            >
+              Descanso: {{restCountdown.toString()}}
+              <br>
+              <v-btn small icon @click="prevExercise">
+                <v-icon>mdi-rewind</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="!timers.rest.isRunning"
+                x-large
+                icon
+                @click="resumeSession"
+                color="primary"
+                class="mx-8"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+              <v-btn
+                v-show="timers.rest.isRunning"
                 x-large
                 icon
                 @click="stopSession"
@@ -149,8 +188,8 @@
 </template>
 
 <script>
-import { fase1_sqs } from "@/assets/fase1-sqs";
-//import { fase1_tq } from "@/assets/fase1-tq";
+//import { fase1_sqs } from "@/assets/fase1-sqs";
+import { fase1_tq } from "@/assets/fase1-tq";
 import bBeep from "browser-beep";
 const beep = bBeep({ frequency: 800 });
 const beep2 = bBeep({ frequency: 5000 });
@@ -160,6 +199,7 @@ export default {
 
   data() {
     return {
+      restCountdown: 0,
       doneSide1: false,
       voices: [],
       DEFAULT_PREP_TIME: 5,
@@ -172,7 +212,7 @@ export default {
       changeSideCountdown: 4,
       exerciseCountdown: 0,
       exerciseRepCount: 0,
-      videos: fase1_sqs,
+      videos: fase1_tq,
       playerVars: {
         controls: 0
       }
@@ -187,7 +227,8 @@ export default {
         this.timers.countdown.isRunning ||
         this.timers.getInPosition.isRunning ||
         this.timers.changeSide.isRunning ||
-        this.timers.repCount.isRunning
+        this.timers.repCount.isRunning ||
+        this.timers.rest.isRunning 
       );
     }
   },
@@ -196,7 +237,8 @@ export default {
     getInPosition: { time: 1000, autostart: false, repeat: true },
     countdown: { time: 1000, autostart: false, repeat: true },
     repCount: { time: 1000, autostart: false, repeat: true },
-    changeSide: { time: 1000, autostart: false, repeat: true }
+    changeSide: { time: 1000, autostart: false, repeat: true },
+    rest: { time: 1000, autostart: false, repeat: true }
   },
   methods: {
     // **** TIMERS ******
@@ -227,7 +269,13 @@ export default {
           this.speak("Mudança de lado...");
           this.$timer.start("changeSide");
         } else {
-          this.nextExercise();
+          //agora veja se tem descanso
+          if(this.videos[this.currentVideoIndex].rest === 0) {
+            this.nextExercise();
+          } else {
+            this.restCountdown = this.videos[this.currentVideoIndex].rest
+            this.$timer.start("rest");
+          }
         }
       }
     },
@@ -251,7 +299,13 @@ export default {
           this.speak("Mudança de lado...");
           this.$timer.start("changeSide");
         } else {
-          this.nextExercise();
+          //agora veja se tem descanso
+          if(this.videos[this.currentVideoIndex].rest === 0) {
+            this.nextExercise();
+          } else {
+            this.restCountdown = this.videos[this.currentVideoIndex].rest
+            this.$timer.start("rest");
+          }
         }
       }
     },
@@ -263,6 +317,14 @@ export default {
         this.changeSideCountdown = this.CHANGE_SIDE_INTERVAL;
         this.startExercise();
       }
+    },
+    rest() {
+      if (this.restCountdown > 0) {
+        this.restCountdown--;
+    } else {
+        this.$timer.stop("rest")
+        this.nextExercise()
+    }
     },
     // ***** FIM TIMERS *****
     startExercise() {
@@ -312,8 +374,10 @@ export default {
       this.$timer.stop("seek");
       this.$timer.stop("changeSide");
       this.$timer.stop(this.videos[this.currentVideoIndex].timer.type);
+      this.$timer.stop("rest");
       this.player.stopVideo();
       this.doneSide1 = false;
+      this.exerciseRepCount = 0
     },
     play(params) {
       let { videoId, start, end } = params;

@@ -1,4 +1,4 @@
-export const fase1_sqs = [
+export const fase1_tq = [
   {
     title: "Foca",
     repText: "5x cada lado",
@@ -19,7 +19,7 @@ export const fase1_sqs = [
     videoId: "3nhQfUGjRCA",
     start: 32,
     end: 42,
-    timer: { type: "countdown", seconds: 10, bothSides: true },
+    timer: { type: "countdown", seconds: 30, bothSides: true },
     rest: 0
   },
   {
@@ -45,7 +45,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 3000,
+      repetitionTime: 4000,
       bothSides: false
     },
     rest: 0
@@ -59,7 +59,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 6000,
+      repetitionTime: 5000,
       bothSides: false
     },
     rest: 0
@@ -87,7 +87,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 20,
-      repetitionTime: 2000,
+      repetitionTime: 1800,
       bothSides: false
     },
     rest: 0
@@ -101,7 +101,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 3000,
+      repetitionTime: 3500,
       bothSides: true
     },
     rest: 0
@@ -161,7 +161,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 3000,
+      repetitionTime: 4000,
       bothSides: true
     },
     rest: 0
@@ -189,7 +189,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 3000,
+      repetitionTime: 4000,
       bothSides: true
     },
     rest: 0
@@ -217,7 +217,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 20,
-      repetitionTime: 2500,
+      repetitionTime: 3500,
       bothSides: false
     },
     rest: 0
@@ -231,7 +231,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 2500,
+      repetitionTime: 3000,
       bothSides: false
     },
     rest: 0
@@ -245,7 +245,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 20,
-      repetitionTime: 2500,
+      repetitionTime: 3500,
       bothSides: false
     },
     rest: 0
@@ -259,7 +259,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 2500,
+      repetitionTime: 3000,
       bothSides: false
     },
     rest: 0
@@ -287,7 +287,7 @@ export const fase1_sqs = [
     timer: {
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 2500,
+      repetitionTime: 3000,
       bothSides: false
     },
     rest: 0
