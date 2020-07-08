@@ -42,7 +42,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 5,
-      repetitionTime: 5000,
+      repetitionTime: 6000,
       bothSides: true
     },
     rest: 0
@@ -54,7 +54,7 @@ export const fase1_sqs = [
     start: 64,
     end: 79,
     timer: {
-      prep: 5,
+      prep: 7,
       type: "repCount",
       repetitionCount: 5,
       repetitionTime: 5000,
@@ -72,7 +72,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 5000,
+      repetitionTime: 4000,
       bothSides: false
     },
     rest: 0
@@ -87,7 +87,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 10,
-      repetitionTime: 5000,
+      repetitionTime: 6000,
       bothSides: false
     },
     rest: 0
@@ -120,7 +120,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 5,
-      repetitionTime: 3500,
+      repetitionTime: 4500,
       bothSides: true
     },
     rest: 0
@@ -153,7 +153,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 5,
-      repetitionTime: 3500,
+      repetitionTime: 4500,
       bothSides: true
     },
     rest: 0
@@ -186,7 +186,7 @@ export const fase1_sqs = [
       prep: 5,
       type: "repCount",
       repetitionCount: 5,
-      repetitionTime: 4000,
+      repetitionTime: 5000,
       bothSides: false
     },
     rest: 60
@@ -201,7 +201,7 @@ export const fase1_sqs = [
       prep: 3,
       type: "repCount",
       repetitionCount: 5,
-      repetitionTime: 4000,
+      repetitionTime: 5000,
       bothSides: false
     },
     rest: 0

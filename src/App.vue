@@ -1,23 +1,36 @@
 <template>
   <v-app>
+    <v-app-bar app color="black" dense dark items="series">
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <v-toolbar-title>Elite Jump</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-select v-model="selectedSeries" :items="series" class="mt-4"></v-select>
+    </v-app-bar>
     <v-main>
-      <v-container fluid>
-        <v-row>
+      <v-container fluid class="pa-0">
+        <v-row class="ma-0">
           <v-col :xs="12" :sm="8">
             <v-responsive :aspect-ratio="16/9">
-             <youtube :player-vars="playerVars" :fitParent="true"
-             resize="true" ref="youtube"></youtube>
+              <youtube :player-vars="playerVars" :fitParent="true" :resize="true" ref="youtube"></youtube>
             </v-responsive>
-            <br>
-            <h1>{{videos[currentVideoIndex].title}}</h1>
-            <p>{{videos[currentVideoIndex].repText}}</p>
+            <h2>{{videos[currentVideoIndex].title}}</h2>
+            <p class>{{videos[currentVideoIndex].repText}}</p>
           </v-col>
           <!-- <v-btn @click="prevExercise">Anterior</v-btn>
             <v-btn @click="resumeSession">Play</v-btn>
             <v-btn @click="stopSession">Stop</v-btn>
           <v-btn @click="nextExercise">Próximo</v-btn>-->
           <v-col :xs="12" :sm="4">
-            <vc-donut class="ma-4" v-if="isIdle" ref="idle" :total="1" :sections="[{value: 0}]">
+            <vc-donut
+              :size="220"
+              class="ma-4"
+              v-if="isIdle"
+              ref="idle"
+              :total="1"
+              :sections="[{value: 0}]"
+            >
               <v-btn small icon @click="prevExercise">
                 <v-icon>mdi-rewind</v-icon>
               </v-btn>
@@ -30,6 +43,7 @@
             </vc-donut>
 
             <vc-donut
+              :size="220"
               v-if="timers.countdown.isRunning"
               ref="countdown"
               :total="videos[currentVideoIndex].timer.seconds"
@@ -66,6 +80,7 @@
             </vc-donut>
 
             <vc-donut
+              :size="220"
               v-if="timers.rest.isRunning"
               ref="rest"
               :total="videos[currentVideoIndex].rest"
@@ -102,6 +117,7 @@
             </vc-donut>
 
             <vc-donut
+              :size="220"
               v-if="timers.getInPosition.isRunning"
               ref="getInPosition"
               :total="videos[currentVideoIndex].timer.prep || DEFAULT_PREP_TIME"
@@ -138,6 +154,7 @@
             </vc-donut>
 
             <vc-donut
+              :size="220"
               v-if="timers.changeSide.isRunning"
               ref="changeSide"
               :total="CHANGE_SIDE_INTERVAL"
@@ -145,6 +162,7 @@
               text="Mudança de lado"
             />
             <vc-donut
+              :size="220"
               v-if="timers.repCount.isRunning"
               ref="repCount"
               :total="videos[currentVideoIndex].timer.repetitionCount"
@@ -188,7 +206,7 @@
 </template>
 
 <script>
-//import { fase1_sqs } from "@/assets/fase1-sqs";
+import { fase1_sqs } from "@/assets/fase1-sqs";
 import { fase1_tq } from "@/assets/fase1-tq";
 import bBeep from "browser-beep";
 const beep = bBeep({ frequency: 800 });
@@ -212,13 +230,21 @@ export default {
       changeSideCountdown: 4,
       exerciseCountdown: 0,
       exerciseRepCount: 0,
-      videos: fase1_tq,
+
       playerVars: {
         controls: 0
-      }
+      },
+      series: [
+        { text: "Segunda quarta e sexta", value: 0 },
+        { text: "Terça e quinta", value: 1 }
+      ],
+      selectedSeries: 0
     };
   },
   computed: {
+    videos() {
+      return this.selectedSeries === 0 ? fase1_sqs : fase1_tq;
+    },
     player() {
       return this.$refs.youtube.player;
     },
@@ -228,7 +254,7 @@ export default {
         this.timers.getInPosition.isRunning ||
         this.timers.changeSide.isRunning ||
         this.timers.repCount.isRunning ||
-        this.timers.rest.isRunning 
+        this.timers.rest.isRunning
       );
     }
   },
@@ -270,10 +296,10 @@ export default {
           this.$timer.start("changeSide");
         } else {
           //agora veja se tem descanso
-          if(this.videos[this.currentVideoIndex].rest === 0) {
+          if (this.videos[this.currentVideoIndex].rest === 0) {
             this.nextExercise();
           } else {
-            this.restCountdown = this.videos[this.currentVideoIndex].rest
+            this.restCountdown = this.videos[this.currentVideoIndex].rest;
             this.$timer.start("rest");
           }
         }
@@ -300,10 +326,10 @@ export default {
           this.$timer.start("changeSide");
         } else {
           //agora veja se tem descanso
-          if(this.videos[this.currentVideoIndex].rest === 0) {
+          if (this.videos[this.currentVideoIndex].rest === 0) {
             this.nextExercise();
           } else {
-            this.restCountdown = this.videos[this.currentVideoIndex].rest
+            this.restCountdown = this.videos[this.currentVideoIndex].rest;
             this.$timer.start("rest");
           }
         }
@@ -321,10 +347,10 @@ export default {
     rest() {
       if (this.restCountdown > 0) {
         this.restCountdown--;
-    } else {
-        this.$timer.stop("rest")
-        this.nextExercise()
-    }
+      } else {
+        this.$timer.stop("rest");
+        this.nextExercise();
+      }
     },
     // ***** FIM TIMERS *****
     startExercise() {
@@ -377,7 +403,7 @@ export default {
       this.$timer.stop("rest");
       this.player.stopVideo();
       this.doneSide1 = false;
-      this.exerciseRepCount = 0
+      this.exerciseRepCount = 0;
     },
     play(params) {
       let { videoId, start, end } = params;
